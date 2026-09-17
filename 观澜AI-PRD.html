@@ -1,0 +1,482 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>观澜AI · 产品需求文档</title><style>button{font:13px "Microsoft YaHei",sans-serif;padding:9px 14px;border:1px solid #d9d0ed;border-radius:7px;background:white;color:#64517f;cursor:pointer}button:hover{background:#f5f0ff}.fab-group{position:fixed;right:22px;bottom:22px;z-index:50;display:flex;gap:8px}.save-btn{background:#6e55d9;color:#fff}.prototype-sidebar{position:fixed;right:0;top:0;bottom:0;width:43%;padding:18px;background:#f8f7fc;border-left:1px solid #ded7ee;z-index:30;display:none}.dual #prdContent{margin-right:44%;padding:25px;max-width:none}.dual .prototype-sidebar{display:block}.preview-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.preview-controls select{max-width:100%;padding:8px}.device-shell{overflow:auto;width:100%;height:calc(100vh - 155px);border:1px solid #ddd7eb;background:white}.device-wrap{position:relative}.preview-iframe{border:0;position:absolute;transform-origin:0 0;width:1440px;height:1250px}.docbar{padding:12px 35px;background:#fff;border-bottom:1px solid #e5dff0;font-size:12px;display:flex;justify-content:space-between}.docbar a{margin-left:16px}body .copy-all-fab{left:22px;bottom:22px;padding:11px 16px}.doc-notice{position:fixed;left:50%;top:20px;transform:translateX(-50%);background:#39304f;color:white;border-radius:8px;padding:12px 20px;z-index:1000}@media print{.fab-group,.copy-all-fab,.prototype-sidebar,.docbar,.row-ctrl,.editable-table-remove{display:none!important}#prdContent{margin:0;padding:15px;border:0}}.edited-cell { background:#e8f5e9 !important; }
+.editable-table-wrap { position:relative; margin:14px 0; }
+.editable-table-wrap > table { margin:0 !important; }
+.pm-anchor { position:relative; }
+.row-ctrl { position:absolute; left:-30px; display:flex; flex-direction:column; gap:3px; opacity:0; pointer-events:none; transition:opacity .15s; z-index:4; }
+tr:hover > * .pm-anchor > .row-ctrl, tr:hover .pm-anchor > .row-ctrl { opacity:1; pointer-events:auto; }
+.row-ctrl button { width:22px; height:18px; border:none; border-radius:5px; cursor:pointer; color:#fff; font-size:13px; font-weight:700; line-height:1; }
+.row-add { background:#00b894; } .row-del { background:#e74c3c; }
+.editable-table-remove { position:absolute; top:-12px; right:8px; z-index:5; border:none; border-radius:999px; background:rgba(231,76,60,.96); color:#fff; font-size:12px; padding:6px 10px; cursor:pointer; opacity:0; pointer-events:none; transition:opacity .15s; }
+.editable-table-wrap:hover .editable-table-remove { opacity:1; pointer-events:auto; }
+.col-resizer { position:absolute; top:0; right:0; width:9px; height:100%; cursor:col-resize; transform:translateX(50%); z-index:3; opacity:0; transition:opacity .15s; }
+.col-resizer::after { content:''; position:absolute; left:4px; top:0; width:2px; height:100%; background:#00b894; opacity:0; transition:opacity .15s; }
+th:hover .col-resizer, td:hover .col-resizer, body.col-resizing .col-resizer.active { opacity:1; }
+.col-resizer:hover::after, body.col-resizing .col-resizer.active::after { opacity:1; }
+.row-resizer { position:absolute; left:0; bottom:0; width:100%; height:9px; cursor:row-resize; transform:translateY(50%); z-index:3; }
+.row-resizer::after { content:''; position:absolute; top:4px; left:0; width:100%; height:2px; background:#00b894; opacity:0; transition:opacity .15s; }
+.row-resizer:hover::after, body.row-resizing .row-resizer.active::after { opacity:1; }
+body.col-resizing, body.row-resizing { user-select:none !important; }
+body.col-resizing { cursor:col-resize !important; } body.row-resizing { cursor:row-resize !important; }
+/* 撤销/重做的瞬时提示：用完即从 DOM 移除，不进保存与复制的产物 */
+.pm-undo-toast { position:fixed; left:50%; bottom:34px; transform:translateX(-50%); background:rgba(33,33,45,.92); color:#fff; padding:8px 16px; border-radius:8px; font-size:13px; line-height:1.4; pointer-events:none; opacity:0; transition:opacity .18s; z-index:9999; }
+.pm-undo-toast.show { opacity:1; }
+.copy-all-fab { position:fixed; left:28px; bottom:28px; z-index:1001; background:#fff; color:#3b357a; border:1px solid #d8d4f0; border-radius:12px; padding:13px 20px; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(91,91,214,.18); display:flex; align-items:center; gap:8px; }
+.copy-all-fab:hover { transform:translateY(-2px); border-color:#5b5bd6; }
+.copy-toast { position:fixed; left:28px; bottom:80px; z-index:1002; max-width:360px; background:#2a2459; color:#fff; padding:11px 16px; border-radius:10px; font-size:13px; box-shadow:0 8px 24px rgba(20,16,70,.28); opacity:0; transform:translateY(8px); pointer-events:none; transition:opacity .2s, transform .2s; }
+.copy-toast.show { opacity:1; transform:translateY(0); }
+</style></head><body><div class="docbar"><b>观澜AI · 设计评审稿</b><span><a href="../原型/观澜AI-prototype.html">体验原型</a><a href="../流程图/观澜AI-screenflow.html">交互流程</a></span></div><main id="prdContent"><style> :root{--pm-accent:#6e55d9}*{box-sizing:border-box}body{margin:0;background:#f8f8fc;color:#343047;font:14px/1.85 "Segoe UI","Microsoft YaHei",sans-serif}a{color:var(--pm-accent)}#prdContent{max-width:1460px;margin:30px auto 110px;padding:45px 50px;background:white;border:1px solid #e5e0ef;border-radius:14px}.doc-title{font-size:28px;color:#30285b;line-height:1.5}.doc-sub{color:#89819b;font-size:13px}h2{font-size:21px;color:#40335d;border-bottom:1px solid #e4def0;padding:20px 0 10px;margin:28px 0 12px}h3{font-size:16px;color:#56436d;margin-top:25px}p{margin:9px 0}table{width:100%;border-collapse:collapse;table-layout:fixed;margin:15px 0;font-size:13px}th{background:#f2eff9;color:#534473;text-align:left;font-weight:600}th,td{border:1px solid #ddd7e9;padding:11px 13px;vertical-align:top;overflow-wrap:anywhere}td p{margin:6px 0}col.c-mod{width:8%}col.c-fn{width:12%}col.c-proto{width:32%}.meta-table td:first-child,.meta-table th:first-child{width:145px}.desc-block{margin-bottom:13px}.desc-block b{color:#65508b}.scope-card,.risk-card{padding:17px 22px;border:1px solid #e2d9f4;border-radius:9px;background:#f8f5ff;margin:13px 0}.risk-card{background:#fffaf2;border-color:#eee1ce}.source-note,.asset-note{font-size:12px;color:#928a9e}.prototype-frame{width:100%;height:320px;overflow:hidden;border:1px solid #e6e0ef;border-radius:7px;position:relative}.prototype-frame iframe{width:1440px;height:1250px;border:0;transform-origin:0 0;transform:scale(.255);position:absolute;left:0;top:0}.seq-code{background:#f5f3f9;padding:20px;white-space:pre-wrap;font:12px/1.8 Consolas,monospace;color:#4b4263;border-radius:8px}.seq{position:relative}.seq>button{float:right;margin:8px}.flow-frame{display:block}.scheme-table .fn,.scheme-table .mod{font-weight:600;color:#534371}@media(max-width:950px){#prdContent{margin:12px 8px 110px;padding:22px;overflow-x:auto}table{min-width:780px}.doc-title{font-size:23px}}</style><h1 class="doc-title">观澜 AI · 生活服务分析工作台 · 产品需求文档（PRD）</h1>
+<p class="doc-sub">抖音生活服务团队数据分析师 · 桌面网页端 · V1.0 · 概念设计</p>
+
+<h2>📋 项目信息</h2>
+<table class="meta-table"><colgroup><col><col></colgroup><thead><tr><th>字段</th><th>值</th></tr></thead><tbody><tr><td>项目名称</td><td>观澜 AI · 生活服务分析工作台（非官方产品）</td></tr><tr><td>版本号</td><td>V1.0</td></tr><tr><td>文档负责人</td><td>产品负责人待用户指定；AI辅助设计</td></tr><tr><td>需求状态</td><td>设计评审稿；原型未接生产系统</td></tr><tr><td>目标用户</td><td>生活服务数据分析师；协作方为业务、数据工程、指标和实验负责人</td></tr><tr><td>涉及端</td><td>桌面网页端，以1440px为主设计宽度</td></tr><tr><td>功能入口</td><td>工作台 → 异动诊断 → 专题分析 → 报告中心 → 能力资产库</td></tr><tr><td>关联文件</td><td><a href="../原型/观澜AI-prototype.html">可点击原型</a> · <a href="../流程图/观澜AI-flow.html">业务流程</a> · <a href="../流程图/观澜AI-screenflow.html">交互流程</a></td></tr><tr><td>材料状态</td><td>无现有平台规范、数据样本、埋点字典或品牌规范；用户授权按建议方案设计</td></tr><tr><td>原型边界</td><td>合成交易数据、预设问答与方法示例；支持本地专题保存与报告下载</td></tr></tbody></table>
+<h2>📝 版本记录</h2>
+<table class="version-table"><colgroup><col><col><col><col></colgroup><thead><tr><th>版本</th><th>日期</th><th>修订人</th><th>修订说明</th></tr></thead><tbody><tr><td>V1.0</td><td>2026-09-17</td><td>AI辅助设计</td><td>承接用户五类分析职责，优先设计异动诊断与专题闭环；覆盖九个界面、证据分级、人工评审、分期实施及生产接入依赖。</td></tr></tbody></table>
+<h2>一、需求背景</h2>
+<p>生活服务分析师既承担日常取数、清洗、看板和问答，也需要独立完成商家增长、交易效率与生态健康的专题研究。用户希望AI嵌入整个过程，释放基础产能并沉淀团队方法。</p><p>本设计假设：重复加工、多工具切换、指标解释不一致及结论不可追溯，会延长从问题发现到策略执行的时间。这些是设计假设，尚未通过团队访谈与工时记录验证。</p><p class="source-note">事实来源：用户需求与范围确认。暂无真实业务数据、团队基线或收益观测。公开平台文档只用于核对券、核销、门店映射和退款等对象，不代表已获取内部系统或官方指标口径。</p>
+<h2>二、需求目标</h2>
+<p><strong>让分析师把更多时间用于判断与策略验证，以更少重复劳动产出可信、可落地、可复用的洞察。</strong></p><table class="goal-table"><colgroup><col><col><col><col><col></colgroup><thead><tr><th>用户结果</th><th>衡量指标</th><th>统计口径</th><th>预期方向</th><th>目标值</th></tr></thead><tbody><tr><td>更快获得可信答案</td><td>从提问到可复算答案的耗时</td><td>已核对任务从首次提问到答案被接受的耗时中位数，按难度分层</td><td>↓</td><td>待基线确认</td></tr><tr><td>减少重复基础劳动</td><td>净节省工时</td><td>同类任务人工耗时减去工具使用、审核和返工耗时，以抽样工时记录计算</td><td>↑</td><td>待基线确认</td></tr><tr><td>提升结论可信度</td><td>证据完整率 / 纠错率</td><td>具有口径、快照、方法和复算材料的结论占比；另记录评审纠错占比</td><td>完整率↑ / 纠错率↓</td><td>待基线确认</td></tr><tr><td>让洞察进入执行</td><td>建议有效采纳率</td><td>有负责人和验证计划且进入执行的建议数 / 通过评审的建议数</td><td>↑</td><td>待基线确认</td></tr><tr><td>减少方法重建</td><td>有效复用率</td><td>被他人用于新项目且通过评审的模板次数 / 模板启动次数</td><td>↑</td><td>待基线确认</td></tr><tr><td>支持可验证增长</td><td>增量核销收益与护栏</td><td>优先通过实验估计，结合补贴和运营成本；无因果识别时仅报告观察变化</td><td>收益↑ / 护栏不恶化</td><td>待基线确认</td></tr></tbody></table><p>工具使用次数和报告数量不能直接代表增长。先采集团队基线，再确定目标。</p>
+<h2>三、需求概述（功能清单）</h2>
+<div class="scope-card"><b>本期范围</b><ul><li>完整能力蓝图，首版优先验证“异动→诊断→专题→行动→报告→复盘”。</li><li>独立桌面工作台；全国/杭州/上海、餐饮、7日/14日为演示范围。</li><li>生产MVP建议只接一个授权数据域与指标语义层，完成只读分析、证据、质量和人工评审。</li><li>交付PRD、九个主界面、关键状态及两类流程图。</li></ul></div><div class="risk-card"><b>本期不做什么 / 暂不展开</b><ul><li>不接真实抖音数据、不代表官方产品；没有内部系统权限。</li><li>原型不执行真实模型训练、取数、消息推送、定时任务、实验或策略投放。</li><li>生产MVP不自动写生产表或自动发布策略；人工审核不可跳过。</li><li>移动深度分析、跨域复杂模型、通用训练平台与多租户计费留待后续评估。</li></ul></div><table class="overview-table"><colgroup><col><col><col></colgroup><thead><tr><th>模块</th><th>一级功能</th><th>说明</th></tr></thead><tbody><tr><td>工作台</td><td>经营概览</td><td>三类业务目标入口、晨间简报、告警、项目和常用能力。</td></tr><tr><td>数据生产</td><td>可信资产</td><td>提取清洗、质量闸门、粒度、血缘、版本、审核；原型展示配置和阻断。</td></tr><tr><td>智能问答</td><td>证据化问答</td><td>澄清、口径、查询草稿、证据引用；原型提供三个示例主题。</td></tr><tr><td>异动诊断</td><td>驱动与假设</td><td>核实变化、等长周期、互斥贡献、候选假设、缺失证据与专题升级。</td></tr><tr><td>专题分析</td><td>分析到复盘</td><td>问题、方法、证据、行动、负责人、复盘日期和报告。</td></tr><tr><td>建模实验室</td><td>分层预测归因因果</td><td>用户/商家分层、需求预测、渠道归因和因果方案；无真实训练。</td></tr><tr><td>A/B实验</td><td>科学评估</td><td>随机单元、MDE、功效、SRM、成熟窗口、护栏和停止规则。</td></tr><tr><td>报告中心</td><td>初稿与审核</td><td>专题、周报、复盘、版本和人工评审；本地下载与演示配置。</td></tr><tr><td>能力资产库</td><td>矩阵与复用</td><td>方法标准、输入、质量闸门、输出、审核和版本。</td></tr></tbody></table><h3>3.1 跨页规则</h3><table class="rule-table"><colgroup><col><col></colgroup><thead><tr><th>规则</th><th>执行要求</th></tr></thead><tbody><tr><td>R1 范围快照</td><td>业务域、地域、行业、对象粒度、时间、对照周期、时区与口径版本随任务保存；切换全局筛选不改写已有专题。</td></tr><tr><td>R2 指标语义</td><td>支付按支付日、核销按事件日；核销撤销与退款分别处理；商家、门店、订单、券和券核销次数不能混用。</td></tr><tr><td>R3 队列成熟</td><td>退款和核销转化在同一支付队列及观察窗内比较。未成熟数据标注不完整，不将当期核销金额/当期支付金额称为核销转化率。</td></tr><tr><td>R4 质量闸门</td><td>新鲜度、主键、缺失、关联覆盖和业务对账失败时，阻断新结论；历史报告保留快照，不伪装实时。</td></tr><tr><td>R5 证据等级</td><td>区分事实、描述性贡献、相关假设、因果证据。每条发现带版本、范围、口径、方法与局限；证据不足输出缺口与补充任务。</td></tr><tr><td>R6 授权审计</td><td>生产需角色、地域、业务域、行列权限，敏感标识脱敏；查询、导出、分享和审批留痕。原型不代表真实鉴权。</td></tr><tr><td>R7 评审版本</td><td>生成即草稿；人工审核后才进入复用。策略或证据变更使旧评审失效；生产保留历史版本，原型要求重新生成报告。</td></tr><tr><td>R8 任务治理</td><td>生产任务包括待确认、排队、运行、待评审、完成、失败、取消；提供阶段耗时、预算、重试和幂等。原型仅短时模拟。</td></tr><tr><td>R9 科学有效性</td><td>时间切分防泄漏；实验随机单元一致；聚类、SRM、样本成熟、护栏、多重检验与停止规则前置校验。</td></tr><tr><td>R10 本地演示</td><td>一个自建专题，可在设置确认重置。本地存储不跨浏览器同步；模型、调度、外部发布和策略投放未接入。</td></tr></tbody></table><h3>3.2 业务指标框架（建议口径）</h3><table class="rule-table"><colgroup><col><col><col></colgroup><thead><tr><th>目标</th><th>指标</th><th>统计要求</th></tr></thead><tbody><tr><td>商家增长</td><td>首单转化 / 动销留存</td><td>固定入驻或动销队列，观察后续首单与留存；观察窗和有效状态待确认。</td></tr><tr><td>交易效率</td><td>支付金额 / 核销金额</td><td>分别按支付事实与核销事实汇总，保留券金额分摊与撤销冲回；与结算区别。</td></tr><tr><td>交易效率</td><td>支付→核销转化</td><td>同一成熟队列的核销有效券数 / 队列有效券数；部分核销、次卡和券类型待确认。</td></tr><tr><td>生态健康</td><td>7日退款率</td><td>支付队列7日内成功退款的去重订单数 / 队列订单数；只展示成熟队列。</td></tr><tr><td>生态健康</td><td>投诉率 / 履约风险</td><td>固定履约队列的有效投诉订单比例；投诉去重、观测窗、风险阈值待确认。</td></tr><tr><td>策略收益</td><td>增量核销收益</td><td>有效对照下估计策略效应并核算成本；不能用相关变化冒充因果收益。</td></tr></tbody></table><h3>3.3 AI能力矩阵</h3><table class="rule-table"><colgroup><col><col><col><col></colgroup><thead><tr><th>能力</th><th>AI嵌入点</th><th>方法与质量闸门</th><th>标准输出</th></tr></thead><tbody><tr><td>取数清洗</td><td>需求与加工草稿、规则推荐</td><td>粒度、授权、去重、对账</td><td>可信资产与质量报告</td></tr><tr><td>异动诊断</td><td>分解计划、维度扫描、假设</td><td>日历效应、互斥贡献与守恒</td><td>诊断卡和证据</td></tr><tr><td>用户/商家分层</td><td>分群建议、特征解释</td><td>生命周期、覆盖、稳定、业务收益</td><td>分层规则与行动</td></tr><tr><td>需求预测</td><td>季节性基线、情景解释</td><td>滚动回测、时间切分、误差与区间覆盖</td><td>预测区间和情景</td></tr><tr><td>效果归因</td><td>路径和规则敏感性</td><td>身份去重、回溯窗；贡献不等于增量</td><td>贡献分配与验证方案</td></tr><tr><td>因果分析</td><td>识别与稳健性方案</td><td>随机化优先；共同趋势、重叠性、干扰</td><td>效应、区间、外推边界</td></tr><tr><td>实验评估</td><td>设计与结果解读</td><td>SRM、功效、成熟窗、护栏</td><td>实验评审材料</td></tr><tr><td>报告复用</td><td>初稿、行动、版本</td><td>人审、快照、变更失效</td><td>报告、复盘和方法资产</td></tr></tbody></table><h3>3.4 角色协同</h3><table class="rule-table"><colgroup><col><col></colgroup><thead><tr><th>角色</th><th>职责</th></tr></thead><tbody><tr><td>分析师</td><td>拆解问题、审核查询和证据、确认方法、输出报告</td></tr><tr><td>业务负责人</td><td>明确目标、决策和执行策略、确认复盘及成本</td></tr><tr><td>数据工程师</td><td>数据质量、血缘、粒度映射和资产发布</td></tr><tr><td>指标/实验负责人</td><td>口径版本、随机化、评估规范与护栏</td></tr><tr><td>平台管理员</td><td>授权、审计、导出范围、预算和服务策略</td></tr></tbody></table>
+<h2>四、业务流程图</h2>
+<p>独立打开可缩放查看；所有界面为演示数据，图中标明质量阻断与人工评审。</p><iframe class="flow-frame" title="四、业务流程图" loading="lazy" src="../流程图/观澜AI-flow.html" style="width:100%;height:1100px;border:1px solid #e4dff0;border-radius:10px"></iframe><p class="asset-note"><a target="_blank" href="../流程图/观澜AI-flow.html">独立打开</a></p>
+<h2>五、交互流程图</h2>
+<p>独立打开可缩放查看；所有界面为演示数据，图中标明质量阻断与人工评审。</p><iframe class="flow-frame" title="五、交互流程图" loading="lazy" src="../流程图/观澜AI-screenflow.html" style="width:100%;height:1050px;border:1px solid #e4dff0;border-radius:10px"></iframe><p class="asset-note"><a target="_blank" href="../流程图/观澜AI-screenflow.html">独立打开</a></p>
+<h2>六、详细方案</h2>
+<p>九个主界面及两个关键状态。表内描述为原型行为；生产要求在能力矩阵和共享规则中列明。</p><table class="scheme-table"><colgroup><col class="c-mod"><col class="c-fn"><col class="c-proto"><col></colgroup><thead><tr><th>一级模块</th><th>二级功能</th><th>原型</th><th>描述</th></tr></thead><tbody><tr data-preview="overview"><td class="mod">工作台</td><td class="fn">1. 经营概览</td><td class="proto"><div class="prototype-frame"><iframe loading="lazy" title="工作台 · 经营概览" src="../原型/观澜AI-prototype.html?embed=1&state=default#overview"></iframe></div><p class="asset-note"><a href="../原型/观澜AI-prototype.html?embed=1&state=default#overview" target="_blank">打开对应原型状态</a></p></td><td class="desc"><div class="desc-block"><b>【页面元素】</b><p>1、九个导航入口、搜索、动态、设置；地域/周期筛选、指标、趋势、关注项与项目。</p></div><div class="desc-block"><b>【交互说明】</b><p>1、开始诊断进入异动；商家或退款关注项进入对应问答。</p><p>2、切换地域周期同步指标与趋势，并清除当前诊断状态；已有专题保留快照。</p><p>3、查看指标口径；搜索功能跳转；设置可确认重置。</p></div><div class="desc-block"><b>【边界说明】</b><p>1、地域为固定比例合成切片；退款率使用更早已成熟队列，不能当作当期交易转化。</p></div></td></tr><tr data-preview="data"><td class="mod">数据生产</td><td class="fn">2. 资产与质量</td><td class="proto"><div class="prototype-frame"><iframe loading="lazy" title="数据生产 · 资产与质量" src="../原型/观澜AI-prototype.html?embed=1&state=default#data"></iframe></div><p class="asset-note"><a href="../原型/观澜AI-prototype.html?embed=1&state=default#data" target="_blank">打开对应原型状态</a></p></td><td class="desc"><div class="desc-block"><b>【页面元素】</b><p>1、四项建议资产与粒度状态、五项质量检查、新建任务。</p></div><div class="desc-block"><b>【交互说明】</b><p>1、查看资产说明；新建任务展示加工步骤并下载配置草稿。</p><p>2、模拟数据延迟切换阻断；模拟修复并重检恢复可分析状态。</p></div><div class="desc-block"><b>【边界说明】</b><p>1、配置下载不会创建真实调度；实验日志始终为待对接。</p></div></td></tr><tr data-preview="data-blocked"><td class="mod">数据生产</td><td class="fn">3. 数据延迟状态</td><td class="proto"><div class="prototype-frame"><iframe loading="lazy" title="数据生产 · 数据延迟状态" src="../原型/观澜AI-prototype.html?embed=1&state=blocked#data"></iframe></div><p class="asset-note"><a href="../原型/观澜AI-prototype.html?embed=1&state=blocked#data" target="_blank">打开对应原型状态</a></p></td><td class="desc"><div class="desc-block"><b>【页面元素】</b><p>1、延迟提示、质量失败与修复按钮。</p></div><div class="desc-block"><b>【交互说明】</b><p>1、新诊断、问答、模型方案与报告按质量规则停止生成。</p><p>2、修复演示后回到诊断重新运行。</p></div><div class="desc-block"><b>【边界说明】</b><p>1、已有报告只作为快照查看；演示修复不执行真实补数。</p></div></td></tr><tr data-preview="chat"><td class="mod">智能问答</td><td class="fn">4. 业务问答</td><td class="proto"><div class="prototype-frame"><iframe loading="lazy" title="智能问答 · 业务问答" src="../原型/观澜AI-prototype.html?embed=1&state=default#chat"></iframe></div><p class="asset-note"><a href="../原型/观澜AI-prototype.html?embed=1&state=default#chat" target="_blank">打开对应原型状态</a></p></td><td class="desc"><div class="desc-block"><b>【页面元素】</b><p>1、输入框、三个示例、上下文、资产和回答规则。</p></div><div class="desc-block"><b>【交互说明】</b><p>1、回车或发送提交问题，Shift+Enter换行；新对话清空会话。</p><p>2、支付问题引导诊断；商家问题引导分层；退款问题解释成熟队列。</p><p>3、点击证据查看复算和未执行查询草稿。</p></div><div class="desc-block"><b>【边界说明】</b><p>1、空输入提示；非示例主题坦诚说明无真实AI，要求明确指标和比较对象，不伪造答案。</p></div></td></tr><tr data-preview="diagnosis"><td class="mod">异动诊断</td><td class="fn">5. 待运行</td><td class="proto"><div class="prototype-frame"><iframe loading="lazy" title="异动诊断 · 待运行" src="../原型/观澜AI-prototype.html?embed=1&state=default#diagnosis"></iframe></div><p class="asset-note"><a href="../原型/观澜AI-prototype.html?embed=1&state=default#diagnosis" target="_blank">打开对应原型状态</a></p></td><td class="desc"><div class="desc-block"><b>【页面元素】</b><p>1、问题、分析范围、运行按钮、四步进度，贡献/趋势/假设页签。</p></div><div class="desc-block"><b>【交互说明】</b><p>1、运行时显示处理中并禁用重复点击，随后进入演示完成状态。</p><p>2、切换页签查看互斥时段贡献、趋势和候选假设。</p></div><div class="desc-block"><b>【边界说明】</b><p>1、质量失败禁用入口并引导修复；左侧数字为演示预览。</p></div></td></tr><tr data-preview="diagnosis-complete"><td class="mod">异动诊断</td><td class="fn">6. 已完成</td><td class="proto"><div class="prototype-frame"><iframe loading="lazy" title="异动诊断 · 已完成" src="../原型/观澜AI-prototype.html?embed=1&state=complete#diagnosis"></iframe></div><p class="asset-note"><a href="../原型/观澜AI-prototype.html?embed=1&state=complete#diagnosis" target="_blank">打开对应原型状态</a></p></td><td class="desc"><div class="desc-block"><b>【页面元素】</b><p>1、四阶段完成、AI摘要、晚间72%贡献、证据版本与缺口。</p></div><div class="desc-block"><b>【交互说明】</b><p>1、查看证据可复核差额、贡献加总和查询草稿。</p><p>2、创建专题填写问题、名称、负责人和复盘日，保存带入当前快照。</p></div><div class="desc-block"><b>【边界说明】</b><p>1、72%为互斥时段差额贡献，不证明供给或流量原因；缺失活动、供给和曝光数据。</p></div></td></tr><tr data-preview="projects"><td class="mod">专题分析</td><td class="fn">7. 项目闭环</td><td class="proto"><div class="prototype-frame"><iframe loading="lazy" title="专题分析 · 项目闭环" src="../原型/观澜AI-prototype.html?embed=1&state=filled#projects"></iframe></div><p class="asset-note"><a href="../原型/观澜AI-prototype.html?embed=1&state=filled#projects" target="_blank">打开对应原型状态</a></p></td><td class="desc"><div class="desc-block"><b>【页面元素】</b><p>1、示例与自建专题、问题、证据快照、负责人、复盘日、待办与行动。</p></div><div class="desc-block"><b>【交互说明】</b><p>1、新建专题必填名称、问题、负责人和日期；证据待办本地保存。</p><p>2、编辑策略和行动项；生成报告草稿进入报告中心；实验入口进入实验设计。</p></div><div class="desc-block"><b>【边界说明】</b><p>1、第二个自建专题替换前显示说明。修改策略后报告和评审失效，需重新生成。生产多项目协作暂未实现。</p></div></td></tr><tr data-preview="models"><td class="mod">建模实验室</td><td class="fn">8. 方法预览</td><td class="proto"><div class="prototype-frame"><iframe loading="lazy" title="建模实验室 · 方法预览" src="../原型/观澜AI-prototype.html?embed=1&state=default#models"></iframe></div><p class="asset-note"><a href="../原型/观澜AI-prototype.html?embed=1&state=default#models" target="_blank">打开对应原型状态</a></p></td><td class="desc"><div class="desc-block"><b>【页面元素】</b><p>1、分层、预测、归因、因果四种方法；对象、窗口、目标和用途。分层支持用户/商家对象。</p></div><div class="desc-block"><b>【交互说明】</b><p>1、切换方法更新适用条件；预览方案显示选定对象和窗口，加入专题可创建项目。</p></div><div class="desc-block"><b>【边界说明】</b><p>1、仅方法草稿，不训练模型，不生成准确率、预测值或因果收益。</p></div></td></tr><tr data-preview="experiments"><td class="mod">A/B 实验</td><td class="fn">9. 设计与样本估算</td><td class="proto"><div class="prototype-frame"><iframe loading="lazy" title="A/B 实验 · 设计与样本估算" src="../原型/观澜AI-prototype.html?embed=1&state=default#experiments"></iframe></div><p class="asset-note"><a href="../原型/观澜AI-prototype.html?embed=1&state=default#experiments" target="_blank">打开对应原型状态</a></p></td><td class="desc"><div class="desc-block"><b>【页面元素】</b><p>1、晚间供给方案、主指标、护栏、评审清单，二项转化样本估算器。</p></div><div class="desc-block"><b>【交互说明】</b><p>1、设计实验查看并下载草稿；填写基线、绝对MDE、流量与设计效应后计算。</p><p>2、查看评审条件了解真实日志、样本和成熟窗口要求。</p></div><div class="desc-block"><b>【功能逻辑】</b><p>1、计算为双侧95%置信、80%功效、1:1分组的两比例正态近似，按随机单元计数，向上取整并乘设计效应。</p></div><div class="desc-block"><b>【边界说明】</b><p>1、基线加提升必须小于100%；设计效应至少1。金额实验不能使用本二项估算器；不执行投放。</p></div></td></tr><tr data-preview="reports"><td class="mod">报告中心</td><td class="fn">10. 报告与复盘</td><td class="proto"><div class="prototype-frame"><iframe loading="lazy" title="报告中心 · 报告与复盘" src="../原型/观澜AI-prototype.html?embed=1&state=filled#reports"></iframe></div><p class="asset-note"><a href="../原型/观澜AI-prototype.html?embed=1&state=filled#reports" target="_blank">打开对应原型状态</a></p></td><td class="desc"><div class="desc-block"><b>【页面元素】</b><p>1、专题、周报、复盘入口，报告任务列表、评审状态、下载和归档。</p></div><div class="desc-block"><b>【交互说明】</b><p>1、有专题且质量通过后生成草稿；下载独立HTML；勾选本地证据审核后归档方法。</p><p>2、周报仅保存每周一09:00配置；保存复盘后重新生成报告以同步结果。</p></div><div class="desc-block"><b>【边界说明】</b><p>1、无专题先创建；未审核不得归档。无真实执行不填收益；不发送消息或创建真实自动化。</p></div></td></tr><tr data-preview="library"><td class="mod">能力资产库</td><td class="fn">11. 方法复用</td><td class="proto"><div class="prototype-frame"><iframe loading="lazy" title="能力资产库 · 方法复用" src="../原型/观澜AI-prototype.html?embed=1&state=default#library"></iframe></div><p class="asset-note"><a href="../原型/观澜AI-prototype.html?embed=1&state=default#library" target="_blank">打开对应原型状态</a></p></td><td class="desc"><div class="desc-block"><b>【页面元素】</b><p>1、八类能力矩阵、方法、质量闸门、标准输出及资产入口。</p></div><div class="desc-block"><b>【交互说明】</b><p>1、打开能力入口进入相应页面；本地评审归档后显示方法已归档。</p></div><div class="desc-block"><b>【边界说明】</b><p>1、本地归档不代表团队发布。生产资产需责任人、输入契约、评审、版本与退役机制。</p></div></td></tr></tbody></table>
+<h2>七、数据埋点</h2>
+<p>以下事件名为待审核草案。无用户字典，参数及枚举均待确认；原型不发送埋点。</p><table class="tracking-table"><colgroup><col><col><col><col><col><col></colgroup><thead><tr><th>序号</th><th>埋点名</th><th>埋点中文名</th><th>埋点类型</th><th>埋点参数</th><th>参数值</th></tr></thead><tbody><tr><td>1</td><td>workspace_view</td><td>工作台曝光</td><td>曝光</td><td>待确认（用户提供参考）</td><td>待确认（用户提供参考）</td></tr><tr><td>2</td><td>diagnosis_start</td><td>启动诊断</td><td>点击</td><td>待确认（用户提供参考）</td><td>待确认（用户提供参考）</td></tr><tr><td>3</td><td>diagnosis_result</td><td>诊断结果</td><td>结果</td><td>待确认（用户提供参考）</td><td>待确认（用户提供参考）</td></tr><tr><td>4</td><td>evidence_view</td><td>查看证据</td><td>点击</td><td>待确认（用户提供参考）</td><td>待确认（用户提供参考）</td></tr><tr><td>5</td><td>project_create</td><td>创建专题</td><td>结果</td><td>待确认（用户提供参考）</td><td>待确认（用户提供参考）</td></tr><tr><td>6</td><td>report_generate</td><td>报告生成</td><td>结果</td><td>待确认（用户提供参考）</td><td>待确认（用户提供参考）</td></tr><tr><td>7</td><td>report_review</td><td>报告审核</td><td>结果</td><td>待确认（用户提供参考）</td><td>待确认（用户提供参考）</td></tr><tr><td>8</td><td>asset_reuse</td><td>方法复用</td><td>结果</td><td>待确认（用户提供参考）</td><td>待确认（用户提供参考）</td></tr><tr><td>9</td><td>strategy_review</td><td>策略复盘</td><td>结果</td><td>待确认（用户提供参考）</td><td>待确认（用户提供参考）</td></tr></tbody></table><p>实施时需事件去重、耗时关联、失败原因分层与机器人排除；不采集原始敏感查询明文。</p>
+<h2>八、时序图</h2>
+<p>生产实现建议，非已接入功能。任务记录标识、范围、口径、质量、预算和版本；授权在服务端执行。</p><div class="seq"><button onclick="copyCode(this)">复制源码</button><pre class="seq-code"><code>sequenceDiagram
+ participant A as 分析师
+ participant U as 工作台
+ participant G as 权限与指标层
+ participant D as 数据任务服务
+ participant M as AI分析服务
+ A-&gt;&gt;U: 提交问题与范围
+ U-&gt;&gt;G: 校验授权、口径与预算
+ G--&gt;&gt;U: 返回授权范围与版本
+ U-&gt;&gt;D: 创建只读任务
+ D-&gt;&gt;D: 执行数据质量检查
+ alt 质量失败
+ D--&gt;&gt;U: 返回阻断和修复入口
+ U--&gt;&gt;A: 暂停生成结论
+ else 质量通过
+ D-&gt;&gt;M: 授权摘要与证据快照
+ M--&gt;&gt;U: 发现、方法、证据与限制
+ U--&gt;&gt;A: 展示待评审结果
+ A-&gt;&gt;U: 创建专题与行动
+ U-&gt;&gt;D: 保存快照与版本
+ A-&gt;&gt;U: 审核报告
+ U-&gt;&gt;D: 归档批准版本
+ end
+ Note over U,D: 生产设计，原型仅本地模拟
+</code></pre></div><div class="seq"><button onclick="copyCode(this)">复制源码</button><pre class="seq-code"><code>stateDiagram-v2
+ [*] --&gt; 待确认
+ 待确认 --&gt; 排队中: 授权与口径通过
+ 排队中 --&gt; 运行中: 资源就绪
+ 运行中 --&gt; 失败: 质量或执行失败
+ 失败 --&gt; 排队中: 修复后重试
+ 排队中 --&gt; 已取消: 取消
+ 运行中 --&gt; 已取消: 取消
+ 运行中 --&gt; 待评审: 证据生成
+ 待评审 --&gt; 已完成: 人工审核
+ 待评审 --&gt; 待确认: 补充证据
+ 已完成 --&gt; 待确认: 新版本
+</code></pre></div>
+<h2>九、上线计划与验证建议</h2><table class="rule-table"><colgroup><col><col><col><col></colgroup><thead><tr><th>阶段</th><th>范围</th><th>验收门槛</th><th>依赖</th></tr></thead><tbody><tr><td>设计验证（本次）</td><td>界面、关键状态、主链路和说明</td><td>原型操作、规则一致和浏览器验证；真实分析师可用性研究待开展</td><td>产品和真实用户</td></tr><tr><td>P0 生产MVP</td><td>一个域、指标层、质量、诊断、专题、报告人审</td><td>权限用例、指标对账、证据复算；无证据不输出强结论</td><td>身份、数仓、质量、模型服务</td></tr><tr><td>P1 扩展复用</td><td>问答、周报、分层、预测和资产版本</td><td>离线题库、时序回测、人工采纳、返工、调度恢复</td><td>调度、埋点、审计、血缘</td></tr><tr><td>P2 科学决策</td><td>实验、准实验、策略跟踪与跨域</td><td>分流、成熟、护栏与成本评审；对照验证业务效果</td><td>实验平台、执行系统与识别材料</td></tr></tbody></table><p>不承诺未经估算的排期与增长幅度。先内部分析师小组，再单一业务域，验证对账、越权、人工纠错和接受度后扩展；失败可回退上一版本。</p><h3>生产验收重点</h3><ul><li>订单多券、部分核销、退款撤销和去重处理明确；同版本同范围复算一致。</li><li>异动贡献互斥且守恒，日历效应和数据缺失可识别。</li><li>AI不存在引用、越权和因果夸大能被离线评测发现并阻断发布。</li><li>预测无未来信息；实验按随机单元估计，SRM、样本不足或未成熟不建议全量。</li><li>任务取消重试、预算限制、版本失效、导出权限与审计可验证。</li></ul>
+<h2>十、附录：设计假设与依据</h2><p>独立桌面端、分析师主导、日级经营分析、浅紫视觉是本次设计假设。品牌“观澜AI”为概念名。所有业务数字为合成样本，指标定义非官方内部口径。</p><h3>公开依据</h3><ul><li><a href="https://developer.open-douyin.com/docs/resource/zh-CN/mini-app/open-capacity/solutions/Life-Service-Solutions/localservice/verification">抖音开放平台：生活服务核销工具小程序</a>（查阅2026-09-16）：核对团购券/次卡、门店映射、核销和退款对象。不能推定内部数据可用。</li><li><a href="https://learn.microsoft.com/en-us/xbox/playfab/live-service-management/game-configuration/experiments/experimentation-keys">Microsoft实验最佳实践</a>（查阅2026-09-16）：样本比例异常是解释效果前的重要检查，未解决时不解释实验结论。</li></ul><h3>待后续确认的产品口径</h3><table class="rule-table"><colgroup><col><col><col></colgroup><thead><tr><th>待确认事项</th><th>责任人待指定</th><th>影响</th></tr></thead><tbody><tr><td>身份、数仓、指标层、模型和现有平台</td><td>平台/数据负责人</td><td>接入边界与权限</td></tr><tr><td>团队痛点、工时基线、目标值</td><td>分析/产品负责人</td><td>验收目标</td></tr><tr><td>支付、核销分摊、退款队列、商家门店映射</td><td>指标/业务负责人</td><td>统计可比性</td></tr><tr><td>埋点参数、枚举与事件关联</td><td>埋点负责人</td><td>上线测量</td></tr><tr><td>分层阈值、预测目标、历史窗与节假日</td><td>分析师/运营</td><td>模型评估</td></tr><tr><td>实验单元、MDE、方差、流量、成熟窗和护栏</td><td>实验负责人</td><td>样本与决策</td></tr><tr><td>成本收益、执行对象与复盘</td><td>业务/财务</td><td>增长衡量</td></tr><tr><td>审核、分享、导出、审计保留与预算</td><td>平台/产品</td><td>生产治理</td></tr><tr><td>品牌与无障碍规范、资源排期及灰度</td><td>设计/研发/产品</td><td>正式实施</td></tr></tbody></table></main><aside class="prototype-sidebar"><b>交互原型 · 双栏预览</b><div class="preview-controls"><select id="previewSelect" aria-label="预览页面" onchange="switchPage(this.value)"></select><button onclick="zoomBy(-.1)">－</button><span id="zoomLabel">适配</span><button onclick="zoomBy(.1)">＋</button><button onclick="fitPreview()">适配</button></div><div class="device-shell"><div class="device-wrap"><iframe class="preview-iframe" id="previewFrame" title="原型预览"></iframe></div></div></aside><button class="copy-all-fab" onclick="copyAllContent()">📋 一键复制全文</button><div class="fab-group"><button id="dualToggle" onclick="toggleDualPane()">双栏预览</button><button class="save-btn" onclick="saveDocument()">保存并通知AI</button></div><script>const CATALOG=[{"value": "overview", "label": "工作台 · 经营概览", "src": "../原型/观澜AI-prototype.html?embed=1&state=default#overview", "w": 1440, "h": 1250}, {"value": "data", "label": "数据生产 · 资产与质量", "src": "../原型/观澜AI-prototype.html?embed=1&state=default#data", "w": 1440, "h": 1250}, {"value": "data-blocked", "label": "数据生产 · 数据延迟状态", "src": "../原型/观澜AI-prototype.html?embed=1&state=blocked#data", "w": 1440, "h": 1250}, {"value": "chat", "label": "智能问答 · 业务问答", "src": "../原型/观澜AI-prototype.html?embed=1&state=default#chat", "w": 1440, "h": 1250}, {"value": "diagnosis", "label": "异动诊断 · 待运行", "src": "../原型/观澜AI-prototype.html?embed=1&state=default#diagnosis", "w": 1440, "h": 1250}, {"value": "diagnosis-complete", "label": "异动诊断 · 已完成", "src": "../原型/观澜AI-prototype.html?embed=1&state=complete#diagnosis", "w": 1440, "h": 1250}, {"value": "projects", "label": "专题分析 · 项目闭环", "src": "../原型/观澜AI-prototype.html?embed=1&state=filled#projects", "w": 1440, "h": 1250}, {"value": "models", "label": "建模实验室 · 方法预览", "src": "../原型/观澜AI-prototype.html?embed=1&state=default#models", "w": 1440, "h": 1250}, {"value": "experiments", "label": "A/B 实验 · 设计与样本估算", "src": "../原型/观澜AI-prototype.html?embed=1&state=default#experiments", "w": 1440, "h": 1250}, {"value": "reports", "label": "报告中心 · 报告与复盘", "src": "../原型/观澜AI-prototype.html?embed=1&state=filled#reports", "w": 1440, "h": 1250}, {"value": "library", "label": "能力资产库 · 方法复用", "src": "../原型/观澜AI-prototype.html?embed=1&state=default#library", "w": 1440, "h": 1250}];let previewPage=CATALOG[0].value,previewZoom=null;const frame=document.getElementById('previewFrame');function cfg(){return CATALOG.find(x=>x.value===previewPage)||CATALOG[0]}function scalePreview(){if(!document.body.classList.contains('dual'))return;let sh=document.querySelector('.device-shell'),c=cfg(),z=previewZoom||Math.min(1,(sh.clientWidth-10)/c.w);frame.style.transform='scale('+z+')';document.querySelector('.device-wrap').style.width=c.w*z+'px';document.querySelector('.device-wrap').style.height=c.h*z+'px';document.getElementById('zoomLabel').textContent=Math.round(z*100)+'%'}function switchPage(v){previewPage=v;document.getElementById('previewSelect').value=v;if(document.body.classList.contains('dual'))frame.src=cfg().src;scalePreview()}function toggleDualPane(){let on=document.body.classList.toggle('dual');document.getElementById('dualToggle').textContent=on?'收起预览':'双栏预览';if(on)frame.src=cfg().src;else frame.removeAttribute('src');scalePreview()}function zoomBy(d){let sh=document.querySelector('.device-shell');previewZoom=Math.max(.15,Math.min(2,(previewZoom||((sh.clientWidth-10)/1440))+d));scalePreview()}function fitPreview(){previewZoom=null;scalePreview()}document.getElementById('previewSelect').innerHTML=CATALOG.map(x=>'<option value="'+x.value+'">'+x.label+'</option>').join('');window.addEventListener('resize',()=>{scalePreview();scaleThumbs()});function scaleThumbs(){document.querySelectorAll('.prototype-frame').forEach(el=>{let z=el.clientWidth/1440;el.querySelector('iframe').style.transform='scale('+z+')';el.style.height=1250*z+'px'})}scaleThumbs();new ResizeObserver(scaleThumbs).observe(document.getElementById('prdContent'));let pendingScroll=false;window.addEventListener('scroll',()=>{if(pendingScroll||!document.body.classList.contains('dual'))return;pendingScroll=true;requestAnimationFrame(()=>{pendingScroll=false;let a=[...document.querySelectorAll('tr[data-preview]')].filter(el=>el.getBoundingClientRect().top<innerHeight*.4&&el.getBoundingClientRect().bottom>0),item=a.at(-1);if(item&&item.dataset.preview!==previewPage)switchPage(item.dataset.preview)})});function notice(t){let n=document.createElement('div');n.className='doc-notice';n.textContent=t;document.body.appendChild(n);setTimeout(()=>n.remove(),3500)}async function saveDocument(){try{let handle=window._prdHandle;if(!handle&&window.showSaveFilePicker){handle=await showSaveFilePicker({suggestedName:'观澜AI-PRD.html',types:[{description:'HTML文档',accept:{'text/html':['.html']}}]});window._prdHandle=handle}let clone=document.documentElement.cloneNode(true);clone.querySelector('body').classList.remove('dual');clone.querySelector('#previewFrame').removeAttribute('src');clone.querySelector('#dualToggle').textContent='双栏预览';clone.querySelectorAll('.doc-notice,.pm-undo-toast,.copy-toast').forEach(n=>n.remove());let source='<!doctype html>\n'+clone.outerHTML;if(handle){let w=await handle.createWritable();await w.write(source);await w.close();notice('文件已保存。请在对话中告知AI读取修改后的文件。')}else{let a=document.createElement('a'),u=URL.createObjectURL(new Blob([source],{type:'text/html;charset=utf-8'}));a.href=u;a.download='观澜AI-PRD.html';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);notice('已下载副本。请提供副本路径，让AI同步修改。')}}catch(e){if(e.name!=='AbortError')notice('保存失败：'+e.message)}}async function copyCode(btn){let text=btn.parentElement.querySelector('code').textContent;try{await navigator.clipboard.writeText(text);notice('源码已复制')}catch(e){let t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();let ok=document.execCommand('copy');t.remove();notice(ok?'源码已复制':'复制失败，请手动复制')}}if(location.hash.startsWith('#preview=')){previewPage=location.hash.slice(9);toggleDualPane();switchPage(previewPage)}
+document.querySelectorAll('#prdContent .row-ctrl,#prdContent .col-resizer,#prdContent .row-resizer,#prdContent .pm-anchor,#prdContent .editable-table-remove').forEach(n=>n.remove());document.querySelectorAll('#prdContent .editable-table-wrap').forEach(n=>{let t=n.querySelector('table');if(t)n.replaceWith(t)});
+(function () {
+  var EDITABLE_BLOCK_SELECTOR = 'td, th, p, li, h1, h2, h3, h4, .alert, blockquote, dd, dt';
+  var EXCLUDE_SELECTOR = '.prototype-sidebar, .fab-group, .save-btn, .save-btn-container, .dual-pane-toggle, ' +
+    '.col-resizer, .row-resizer, .row-ctrl, .pm-anchor, .editable-table-remove, .pm-undo-toast, script, style, iframe, button';
+  var SKIP_CELL_CONTENT = 'table, iframe, video, canvas, img';   // 含这些的容器格不整体接管（如原型/截图列）
+  var origMap = new WeakMap(), rowDone = new WeakSet();
+
+  /* ========== 撤销/重做栈（纯内存，不写 DOM，不跨刷新） ========== */
+  var undoStack = [], redoStack = [], MAX_STEPS = 200, applying = false;
+  function pushStep(step){
+    if (applying) return;                     // 撤销/重做自身产生的变更不再入栈
+    undoStack.push(step);
+    if (undoStack.length > MAX_STEPS) undoStack.shift();
+    redoStack.length = 0;                     // 新编辑清空重做分支
+  }
+  function reinsert(node, parent, next){      // next 可能已被后续操作删掉，兜底 append
+    if (!parent) return;
+    if (next && next.parentNode === parent) parent.insertBefore(node, next); else parent.appendChild(node);
+  }
+  var toastEl = null, toastTimer = null;
+  function toast(msg){                        // 瞬时提示：用完即从 DOM 摘除，不污染保存/复制的产物
+    if (!toastEl){
+      toastEl = document.createElement('div'); toastEl.className = 'pm-undo-toast';
+      toastEl.setAttribute('contenteditable','false'); document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = msg;
+    requestAnimationFrame(function(){ if (toastEl) toastEl.classList.add('show'); });
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ if (toastEl){ toastEl.remove(); toastEl = null; } }, 1300);
+  }
+  function runStep(s, dir){ applying = true; try { s[dir](); } finally { applying = false; } }
+  function undo(){
+    commitPending();                          // 先结算正在输入的这一笔，保证栈序正确
+    var s = undoStack.pop(); if (!s){ toast('没有可撤销的操作'); return; }
+    runStep(s, 'undo'); redoStack.push(s); toast('已撤销');
+  }
+  function redo(){
+    commitPending();
+    var s = redoStack.pop(); if (!s){ toast('没有可重做的操作'); return; }
+    runStep(s, 'redo'); undoStack.push(s); toast('已重做');
+  }
+  function isFormField(t){ return !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT'); }
+  // 捕获阶段 + preventDefault：必须拦掉浏览器对 contenteditable 的原生撤销，否则两套栈会叠加执行
+  document.addEventListener('keydown', function(e){
+    if (!(e.metaKey || e.ctrlKey) || e.altKey) return;
+    if (isFormField(e.target)) return;                                  // 输入框/下拉内交还原生行为
+    var k = (e.key || '').toLowerCase();
+    if (k === 'z' && !e.shiftKey){ e.preventDefault(); undo(); }        // ⌘Z / Ctrl+Z
+    else if (k === 'y' || (k === 'z' && e.shiftKey)){ e.preventDefault(); redo(); }   // ⌘⇧Z / Ctrl+Y / Ctrl+⇧Z
+  }, true);
+
+  /* ---- 文字编辑：一次连续输入合并成一步（停顿 600ms / 失焦 / 触发撤销 时结算） ---- */
+  var pending = null, pendTimer = null, PEND_MS = 600;
+  function flagState(el){ return { changed: el.getAttribute('data-changed'), cls: el.classList.contains('edited-cell') }; }
+  function applyFlag(el, s){
+    if (s.changed) el.setAttribute('data-changed', s.changed); else el.removeAttribute('data-changed');
+    if (s.cls) el.classList.add('edited-cell'); else el.classList.remove('edited-cell');
+  }
+  function syncChangedFlag(el){ if (el.innerHTML !== origMap.get(el)) markEditableCellChanged(el); }
+  function reveal(el){ if (el && el.isConnected && el.scrollIntoView) el.scrollIntoView({ block:'nearest' }); }
+  function seed(el){ pending = { el: el, before: el.innerHTML, flag: flagState(el) }; }
+  function commitPending(){
+    if (pendTimer){ clearTimeout(pendTimer); pendTimer = null; }
+    var p = pending; pending = null;
+    if (!p) return;
+    var el = p.el, before = p.before, beforeFlag = p.flag, after = el.innerHTML;
+    if (after === before) return;
+    syncChangedFlag(el);
+    var afterFlag = flagState(el);
+    pushStep({
+      undo: function(){ el.innerHTML = before; applyFlag(el, beforeFlag); reveal(el); },
+      redo: function(){ el.innerHTML = after;  applyFlag(el, afterFlag);  reveal(el); }
+    });
+  }
+  function onEditFocus(){ if (pending && pending.el !== this) commitPending(); if (!pending) seed(this); }
+  function onEditInput(){
+    var el = this;
+    if (!pending || pending.el !== el){ commitPending(); seed(el); }
+    if (pendTimer) clearTimeout(pendTimer);
+    pendTimer = setTimeout(function(){
+      var still = pending && pending.el;
+      commitPending();
+      if (still && document.activeElement === still) seed(still);       // 还在打字就续上下一步
+    }, PEND_MS);
+  }
+  function onEditBlur(){ if (pending && pending.el === this) commitPending(); syncChangedFlag(this); }
+
+  /* ========== 编辑接管 ========== */
+  function isExcluded(el){ return !!(el.closest && el.closest(EXCLUDE_SELECTOR)); }
+  function isHeaderRow(tr){ return tr.cells.length > 0 && Array.prototype.every.call(tr.cells, function(c){ return c.tagName === 'TH'; }); }
+  function headerRowOf(table){
+    if (table.tHead && table.tHead.rows[0]) return table.tHead.rows[0];
+    for (var i=0;i<table.rows.length;i++) if (isHeaderRow(table.rows[i])) return table.rows[i];
+    return table.rows[0] || null;
+  }
+  function markEditableCellChanged(el){ if(!el) return; el.setAttribute('data-changed','true'); el.classList.add('edited-cell'); }
+  function trackEditable(el){
+    if (origMap.has(el)) return; origMap.set(el, el.innerHTML);   // 内存态守卫，不写入 HTML
+    el.setAttribute('contenteditable','true'); el.style.outline='none';
+    el.addEventListener('focus', onEditFocus);
+    el.addEventListener('input', onEditInput);
+    el.addEventListener('blur', onEditBlur);
+  }
+  function makeDocumentEditable(root){
+    (root||document).querySelectorAll(EDITABLE_BLOCK_SELECTOR).forEach(function(el){
+      if (isExcluded(el)) return;
+      if (el.querySelector(SKIP_CELL_CONTENT)) return;
+      trackEditable(el);
+    });
+  }
+  function wrapTable(table){
+    if (table.closest('.editable-table-wrap')) return table.closest('.editable-table-wrap');
+    var wrap=document.createElement('div'); wrap.className='editable-table-wrap'; wrap.setAttribute('contenteditable','false');
+    table.parentNode.insertBefore(wrap, table); wrap.appendChild(table);
+    var rm=document.createElement('button'); rm.type='button'; rm.className='editable-table-remove'; rm.textContent='删除表格';
+    rm.addEventListener('click', function(e){
+      e.preventDefault();
+      var parent=wrap.parentNode, next=wrap.nextSibling;
+      wrap.remove();                                          // 节点留在栈里，监听器不丢，撤销即原样插回
+      pushStep({ undo:function(){ reinsert(wrap, parent, next); reveal(wrap); }, redo:function(){ wrap.remove(); } });
+    });
+    wrap.appendChild(rm); return wrap;
+  }
+  function blankRowFrom(tr){
+    var clone=tr.cloneNode(true); clone.style.height=''; clone.removeAttribute('id');
+    Array.prototype.forEach.call(clone.cells, function(c){
+      c.removeAttribute('rowspan'); c.removeAttribute('colspan'); c.removeAttribute('id');
+      c.removeAttribute('data-changed'); c.classList.remove('edited-cell');
+      c.querySelectorAll('.row-ctrl, .col-resizer, .row-resizer, .pm-anchor').forEach(function(n){
+        if(n.classList.contains('pm-anchor')){ while(n.firstChild) n.parentNode.insertBefore(n.firstChild,n); n.remove(); } else n.remove();
+      });
+      if(!c.querySelector('iframe, img, video, canvas')) c.innerHTML='<br>';
+      c.removeAttribute('contenteditable');
+    });
+    return clone;
+  }
+  function installRowControls(tr){
+    var first=tr.cells[0]; if(!first || first.querySelector(':scope > .pm-anchor > .row-ctrl')) return;
+    first.style.position='relative';
+    var anchor=document.createElement('span'); anchor.className='pm-anchor'; anchor.setAttribute('contenteditable','false');
+    var ctrl=document.createElement('span'); ctrl.className='row-ctrl';
+    var add=document.createElement('button'); add.type='button'; add.className='row-add'; add.textContent='+'; add.title='在下方插入一行';
+    var del=document.createElement('button'); del.type='button'; del.className='row-del'; del.textContent='−'; del.title='删除本行';
+    add.addEventListener('click', function(e){
+      e.preventDefault();
+      var nr=blankRowFrom(tr), parent=tr.parentNode, next=tr.nextSibling;
+      parent.insertBefore(nr, next); decorateRow(nr); makeDocumentEditable(nr);
+      pushStep({
+        undo:function(){ nr.remove(); },
+        redo:function(){ if(tr.parentNode) tr.parentNode.insertBefore(nr, tr.nextSibling); else reinsert(nr, parent, next); reveal(nr); }
+      });
+    });
+    del.addEventListener('click', function(e){
+      e.preventDefault();
+      var body=tr.parentNode; var dataRows=Array.prototype.filter.call(body.rows, function(r){return !isHeaderRow(r);});
+      if(dataRows.length<=1) return;
+      var next=tr.nextSibling;
+      tr.remove();                                            // 同上：整行节点保活在栈里，撤销后控件仍可用
+      pushStep({ undo:function(){ reinsert(tr, body, next); reveal(tr); }, redo:function(){ tr.remove(); } });
+    });
+    ctrl.appendChild(add); ctrl.appendChild(del); anchor.appendChild(ctrl); first.insertBefore(anchor, first.firstChild);
+  }
+  function ensureCols(table){
+    if (table.querySelector('colgroup')) return table.querySelector('colgroup');
+    var headRow=headerRowOf(table); if(!headRow) return null;
+    var cg=document.createElement('colgroup');
+    for(var i=0;i<headRow.cells.length;i++){ var col=document.createElement('col'); col.style.width=headRow.cells[i].offsetWidth+'px'; cg.appendChild(col); }
+    table.insertBefore(cg, table.firstChild); return cg;
+  }
+  function installColResizers(table){
+    var cg=ensureCols(table); if(!cg) return; var cols=cg.querySelectorAll('col');
+    var headRow=headerRowOf(table); if(!headRow) return;
+    Array.prototype.forEach.call(headRow.cells, function(th, idx){
+      if(idx>=cols.length) return; if(th.querySelector(':scope > .col-resizer')) return;
+      th.style.position='relative';
+      var h=document.createElement('span'); h.className='col-resizer'; h.setAttribute('contenteditable','false');
+      var col=cols[idx];
+      h.addEventListener('mousedown', function(e){
+        e.preventDefault(); e.stopPropagation();
+        var startX=e.clientX, startW=col.offsetWidth||th.offsetWidth, beforeW=col.style.width;
+        h.classList.add('active'); document.body.classList.add('col-resizing');
+        function mv(ev){ col.style.width=Math.max(48, startW+(ev.clientX-startX))+'px'; }
+        function up(){
+          document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up);
+          h.classList.remove('active'); document.body.classList.remove('col-resizing');
+          var afterW=col.style.width;
+          if(afterW!==beforeW) pushStep({ undo:function(){ col.style.width=beforeW; }, redo:function(){ col.style.width=afterW; } });
+        }
+        document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
+      });
+      th.appendChild(h);
+    });
+  }
+  function installRowResizer(tr){
+    var first=tr.cells[0]; if(!first || first.querySelector(':scope > .row-resizer')) return;
+    first.style.position='relative';
+    var h=document.createElement('span'); h.className='row-resizer'; h.setAttribute('contenteditable','false');
+    h.addEventListener('mousedown', function(e){
+      e.preventDefault(); e.stopPropagation();
+      var startY=e.clientY, startH=tr.offsetHeight, beforeH=tr.style.height;
+      h.classList.add('active'); document.body.classList.add('row-resizing');
+      function mv(ev){ tr.style.height=Math.max(24, startH+(ev.clientY-startY))+'px'; }
+      function up(){
+        document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up);
+        h.classList.remove('active'); document.body.classList.remove('row-resizing');
+        var afterH=tr.style.height;
+        if(afterH!==beforeH) pushStep({ undo:function(){ tr.style.height=beforeH; }, redo:function(){ tr.style.height=afterH; } });
+      }
+      document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
+    });
+    first.appendChild(h);
+  }
+  function decorateRow(tr){ if(rowDone.has(tr) || isHeaderRow(tr) || tr.closest('thead')) return; rowDone.add(tr); installRowControls(tr); installRowResizer(tr); }
+  function installTableControls(root){
+    (root||document).querySelectorAll('table').forEach(function(table){
+      if(isExcluded(table) || table.closest('.no-edit')) return;
+      wrapTable(table); installColResizers(table);
+      Array.prototype.forEach.call(table.rows, decorateRow);
+    });
+  }
+  function init(root){ installTableControls(root); makeDocumentEditable(root); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ init(document.getElementById('prdContent')); }); else init(document.getElementById('prdContent'));
+  window.PMEdit={ init:init, makeDocumentEditable:makeDocumentEditable, installTableControls:installTableControls,
+                  undo:undo, redo:redo, canUndo:function(){ return undoStack.length>0; }, canRedo:function(){ return redoStack.length>0; } };
+})();
+</script><script src="../../scripts/prototype-export-client.js"></script><script>(function(){
+  var mediaCache = new Map();   // src → dataUrl，同一次会话复用（iframe 与 img 共用）
+  var MAX_IMG_WIDTH = 2000;     // 粘出去的图片宽度上限，见 ⑤ 体积控制（1200 会让放大看时发虚）
+
+  // 服务下发的是 2 倍图（一张能到 3MB），直接塞剪贴板会几十 MB。
+  // data: URL 不会污染 canvas，所以缩放可以在本页做完，不用再依赖任何图像库。
+  function shrinkDataUrl(dataUrl, maxWidth){
+    return new Promise(function(resolve){
+      var im = new Image();
+      im.onload = function(){
+        if(!im.naturalWidth || im.naturalWidth <= maxWidth){ resolve(dataUrl); return; }
+        try{
+          var r = maxWidth / im.naturalWidth;
+          var c = document.createElement('canvas');
+          c.width = Math.round(im.naturalWidth * r);
+          c.height = Math.round(im.naturalHeight * r);
+          var ctx = c.getContext('2d');
+          ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);  // JPEG 没有透明通道，先铺白底
+          ctx.drawImage(im, 0, 0, c.width, c.height);
+          resolve(c.toDataURL('image/jpeg', 0.9));
+        }catch(e){ resolve(dataUrl); }   // 缩放失败就用原图，不能因此丢图
+      };
+      im.onerror = function(){ resolve(dataUrl); };
+      im.src = dataUrl;
+    });
+  }
+
+  // ① 先剥交互骨架，iframe/img 都先留着
+  function stripSkeleton(){
+    var clone = document.getElementById('prdContent').cloneNode(true);
+    // 页面 CSS 在 <head> 里，克隆 body 带不走 → 原型列截图会按 1200px 原图把表格撑爆、
+    // 描述列被挤成一行一个字。趁 clone 与实时 DOM 还一一对应，把实际显示宽度固化成内联样式。
+    var live = document.getElementById('prdContent').querySelectorAll('img'), copies = clone.querySelectorAll('img');
+    for(var i=0; i<live.length && i<copies.length; i++){
+      var w = Math.round(live[i].getBoundingClientRect().width);
+      if(w > 0){ copies[i].style.width = w + 'px'; copies[i].style.height = 'auto'; }
+      copies[i].style.maxWidth = '100%';
+    }
+    clone.querySelectorAll('.prototype-sidebar, .fab-group, .copy-all-fab, .copy-toast, .col-resizer, .row-resizer, .row-ctrl, .pm-anchor, .editable-table-remove, script, noscript').forEach(function(n){ n.remove(); });
+    clone.querySelectorAll('.editable-table-wrap').forEach(function(w){ var t=w.querySelector('table'); if(t) w.replaceWith(t); else w.remove(); });
+    return clone;
+  }
+
+  // ② 只扫 clone 里活下来的节点，逐个取 base64
+  async function collectMedia(clone){
+    var jobs = [];
+    clone.querySelectorAll('iframe[src]').forEach(function(el){
+      jobs.push({ el: el, src: el.getAttribute('src'), kind: 'frame' });
+    });
+    clone.querySelectorAll('img[src]').forEach(function(el){
+      var s = el.getAttribute('src');
+      if(s && !/^data:/i.test(s)) jobs.push({ el: el, src: s, kind: 'asset' });
+    });
+
+    var out = { ok:0, fail:0, serviceDown:false, jobs: jobs };
+    if(!jobs.length) return out;
+    if(typeof window.snapshotPrototypeViaServer !== 'function' || typeof window.inlineAssetViaServer !== 'function'){
+      out.serviceDown = true; out.fail = jobs.length; return out;
+    }
+
+    var srcs = [];
+    jobs.forEach(function(j){ if(srcs.indexOf(j.src) === -1) srcs.push(j.src); });
+
+    // 先把"服务在不在"一次性问清楚，再逐张取图。
+    // 别靠嗅探第一张的报错文案来判断服务死活——那既不准，又会让每张图都白等一遍探测。
+    // 这一步最慢：健康探测 8s + 唤起 launcher + 等浏览器冷启动最多 30s，实测服务确实没起时约 39s，
+    // 所以必须挂常驻 toast 说明在等什么，不能让用户对着不动的界面猜。
+    if(mediaCache.size < srcs.length){
+      showToast('正在唤起原型导出服务（首次启动较慢，最长约 40 秒）…', false, true);
+      try{
+        await window.ensureExportServerReady();
+      }catch(e){
+        console.warn('[copy-all] 导出服务不可用', e);
+        out.serviceDown = true; out.fail = srcs.length; return out;
+      }
+    }
+
+    for(var i=0;i<srcs.length;i++){
+      var src = srcs[i];
+      if(mediaCache.has(src)){ out.ok++; continue; }
+      showToast('正在生成图片 '+(i+1)+'/'+srcs.length+'…', false, true);
+      var kind = jobs.filter(function(j){ return j.src === src; })[0].kind;
+      try{
+        var data = kind === 'frame'
+          ? await window.snapshotPrototypeViaServer(src.includes('screenflow.html')?src.split('?')[0]+'?capture=1#canvas':src.includes('-flow.html')?src.split('?')[0]+'?capture=1#businessFlows':src, {viewport:{width:1440,height:1250}})
+          : await window.inlineAssetViaServer(src, {});
+        mediaCache.set(src, await shrinkDataUrl(data.dataUrl, MAX_IMG_WIDTH)); out.ok++;
+      }catch(e){
+        console.warn('[copy-all] 取图失败', src, e);
+        out.fail++;   // 单张失败不影响其余，最后由 toast 如实报数
+      }
+    }
+    return out;
+  }
+
+  // ③ 落图 + 清编辑痕迹 + 补排版
+  function finalizeClone(clone, jobs){
+    (jobs||[]).forEach(function(j){
+      var url = mediaCache.get(j.src);
+      if(j.kind === 'frame'){
+        if(!url){ j.el.remove(); return; }              // 原型取图失败 → 退回删除
+        var img = document.createElement('img');
+        img.src = url;
+        img.alt = j.el.getAttribute('title') || '原型预览';
+        img.style.cssText = 'max-width:100%;height:auto;border:1px solid #e5e3f5;border-radius:8px;';
+        j.el.replaceWith(img);
+      } else if(url){
+        j.el.setAttribute('src', url);                  // 截图内联失败 → 保留原样，由 toast 如实报数
+      }
+    });
+    clone.querySelectorAll('[contenteditable]').forEach(function(el){ el.removeAttribute('contenteditable'); });
+    ['data-changed','data-original','data-orig','data-pm-tracked'].forEach(function(a){ clone.querySelectorAll('['+a+']').forEach(function(el){ el.removeAttribute(a); }); });
+    clone.querySelectorAll('.edited-cell').forEach(function(el){ el.classList.remove('edited-cell'); });
+    clone.querySelectorAll('.prototype-frame').forEach(el=>{el.style.height='auto';el.style.overflow='visible';el.style.position='static'});clone.querySelectorAll('table').forEach(function(t){ t.style.borderCollapse='collapse'; t.style.width='100%'; });
+    clone.querySelectorAll('th,td').forEach(function(c){ c.style.border='1px solid #ccc'; c.style.padding='6px 10px'; c.style.verticalAlign='top'; });
+    clone.querySelectorAll('th').forEach(function(c){ if(!c.style.background) c.style.background='#f2f1f8'; });
+    clone.querySelectorAll('img').forEach(function(img){
+      try{ if(!/^data:/i.test(img.getAttribute('src')||'')) img.setAttribute('src', img.src); }catch(e){}
+    });
+    return clone;
+  }
+
+  function showToast(msg, err, sticky){
+    var t=document.querySelector('.copy-toast');
+    if(!t){ t=document.createElement('div'); t.className='copy-toast'; document.body.appendChild(t); }
+    t.textContent=msg; t.style.background= err? '#c0392b' : '#2a2459'; t.classList.add('show');
+    clearTimeout(showToast._t);
+    if(!sticky) showToast._t=setTimeout(function(){ t.classList.remove('show'); }, 2600);
+  }
+
+  async function writeClipboard(html, text){
+    try{
+      if(navigator.clipboard && window.ClipboardItem){
+        await navigator.clipboard.write([new ClipboardItem({
+          'text/html': new Blob([html],{type:'text/html'}),
+          'text/plain': new Blob([text],{type:'text/plain'})
+        })]);
+        return true;
+      }
+      throw new Error('no async clipboard');
+    }catch(e){
+      var holder=document.createElement('div'); holder.setAttribute('contenteditable','true');
+      holder.style.cssText='position:fixed;left:-99999px;top:0;opacity:0;'; holder.innerHTML=html;
+      document.body.appendChild(holder);
+      var range=document.createRange(); range.selectNodeContents(holder);
+      var sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      var okc=document.execCommand('copy'); sel.removeAllRanges(); holder.remove();
+      if(!okc) throw new Error('execCommand 拒绝');
+      return true;
+    }
+  }
+
+  async function copyAllContent(){
+    try{
+      var clone = stripSkeleton();
+      var media = await collectMedia(clone);
+      finalizeClone(clone, media.jobs);
+      await writeClipboard('<meta charset="utf-8">'+clone.innerHTML, document.getElementById('prdContent').innerText);
+      if(media.serviceDown)     showToast('导出服务未启动，已按纯文本复制（原型图缺失）', true);
+      else if(media.fail)       showToast('已复制全文，含 '+media.ok+' 张图，'+media.fail+' 张生成失败已跳过', true);
+      else if(media.ok)         showToast('已复制全文（含 '+media.ok+' 张图），可直接粘贴到钉钉/飞书/Word');
+      else                      showToast('已复制全文，可直接粘贴到钉钉/飞书/Word');
+    }catch(e){
+      showToast('复制失败，请手动全选复制：'+(e.message||e), true);
+    }
+  }
+  window.copyAllContent=copyAllContent;
+})();
+</script></body></html>
